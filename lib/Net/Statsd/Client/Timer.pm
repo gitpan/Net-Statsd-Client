@@ -5,7 +5,7 @@ use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 # ABSTRACT: Measure event timings and send them to StatsD
-our $VERSION = '0.10'; # VERSION
+our $VERSION = '0.11'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 sub new {
@@ -30,7 +30,7 @@ sub finish {
   my $duration = tv_interval($self->{start});
   $self->{statsd}->timing_ms(
     $self->{metric},
-    $duration,
+    $duration * 1000,
     $self->{sample_rate},
   );
   delete $self->{_pending};
@@ -62,7 +62,7 @@ Net::Statsd::Client::Timer - Measure event timings and send them to StatsD
 
 =head1 VERSION
 
-version 0.10
+version 0.11
 
 =head1 SYNOPSIS
 

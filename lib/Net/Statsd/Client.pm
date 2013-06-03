@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.10'; # VERSION
+our $VERSION = '0.11'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Etsy::StatsD;
@@ -83,7 +83,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.10
+version 0.11
 
 =head1 SYNOPSIS
 
