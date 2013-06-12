@@ -1,28 +1,34 @@
 package Net::Statsd::Client::Timer;
-use strict;
-use warnings;
+use Moo;
+use Sub::Quote;
+
+# ABSTRACT: Measure event timings and send them to StatsD
+our $VERSION = '0.20'; # VERSION
+our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Time::HiRes qw(gettimeofday tv_interval);
 
-# ABSTRACT: Measure event timings and send them to StatsD
-our $VERSION = '0.11'; # VERSION
-our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
+has 'statsd' => (
+  is => 'ro',
+  required => 1,
+);
 
-sub new {
-  my ($class, %args) = @_;
+has '_pending' => (
+  is => 'rw',
+  default => quote_sub q{1},
+);
 
-  my $start = [gettimeofday];
+has ['metric', 'start', '_file', '_line'] => (
+  is => 'rw',
+);
+
+sub BUILD {
+  my ($self) = @_;
   my (undef, $file, $line) = caller(1);
 
-  my $self = {
-    %args,
-    start => $start,
-    _file => $file,
-    _line => $line,
-    _pending => 1,
-  };
-
-  return bless $self, $class;
+  $self->start([gettimeofday]);
+  $self->_file($file);
+  $self->_line($line);
 }
 
 sub finish {
@@ -41,7 +47,7 @@ sub cancel {
   delete $self->{_pending};
 }
 
-sub DESTROY {
+sub DEMOLISH {
   my ($self) = @_;
   if ($self->{_pending}) {
     my $metric = $self->{metric};
@@ -52,7 +58,7 @@ sub DESTROY {
 
 1;
 
-
+__END__
 
 =pod
 
@@ -62,7 +68,7 @@ Net::Statsd::Client::Timer - Measure event timings and send them to StatsD
 
 =head1 VERSION
 
-version 0.11
+version 0.20
 
 =head1 SYNOPSIS
 
@@ -94,6 +100,21 @@ goes out of scope without having C<finish> or C<cancel> called on it will
 generate a warning, since this probably points to bugs and lost timing
 information.
 
+=head2 $timer->metric($new)
+
+Change the metric name of a timer on the fly. This is useful if you don't
+know what kind of event you're timing until it's finished. Harebrained
+example:
+
+    my $timer = $statsd->timer("item.fetch");
+    my $item = $cache->get("blah");
+    if ($item) {
+        $timer->metric("item.fetch_from_cache");
+    } else {
+        $item = get_it_the_long_way();
+    }
+    $timer->finish;
+
 =head1 AUTHOR
 
 Andrew Rodland <arodland@cpan.org>
@@ -106,7 +127,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

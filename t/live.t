@@ -4,6 +4,9 @@ use warnings;
 use Test::More;
 
 use IO::Socket;
+
+plan skip_all => "Live testing disabled except for RELEASE_TESTING" unless $ENV{RELEASE_TESTING};
+
 my $sock = IO::Socket::INET->new(
   LocalPort => 8125,
   Proto => "udp",

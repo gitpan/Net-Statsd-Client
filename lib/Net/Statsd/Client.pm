@@ -1,37 +1,43 @@
 package Net::Statsd::Client;
-use strict;
-use warnings;
+use Moo;
+use Sub::Quote;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.11'; # VERSION
+our $VERSION = '0.20'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Etsy::StatsD;
 use Net::Statsd::Client::Timer;
 
-my $statsd;
+has 'prefix' => (
+  is => 'ro',
+  default => quote_sub q{''},
+);
 
-sub instance {
-  my $class = shift;
-  unless (defined $statsd) {
-    $statsd = $class->_build_statsd;
-  }
-  return $statsd;
-}
+has 'sample_rate' => (
+  is => 'ro',
+  default => quote_sub q{1},
+);
 
-sub new {
-  my $class = shift;
-  my %args = @_;
-  my $self = {};
+has 'host' => (
+  is => 'ro',
+  default => quote_sub q{'localhost'},
+);
 
-  $self->{prefix} = $args{prefix} || "";
-  $self->{sample_rate} = defined $args{sample_rate} ? $args{sample_rate} : 1;
-  $self->{host} = $args{host} || "localhost";
-  $self->{port} = $args{port} || 8125;
+has 'port' => (
+  is => 'ro',
+  default => quote_sub q{8125},
+);
 
-  $self->{statsd} = Etsy::StatsD->new($self->{host}, $self->{port});
+has 'statsd' => (
+  is => 'rw',
+);
 
-  return bless $self, $class;
+sub BUILD {
+  my ($self) = @_;
+  $self->statsd(
+    Etsy::StatsD->new($self->host, $self->port)
+  );
 }
 
 sub increment {
@@ -73,7 +79,7 @@ sub timer {
 
 1;
 
-
+__END__
 
 =pod
 
@@ -83,7 +89,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.11
+version 0.20
 
 =head1 SYNOPSIS
 
@@ -146,7 +152,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
