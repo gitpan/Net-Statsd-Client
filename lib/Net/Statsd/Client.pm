@@ -3,7 +3,7 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.20'; # VERSION
+our $VERSION = '0.21'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Etsy::StatsD;
@@ -30,6 +30,10 @@ has 'port' => (
 );
 
 has 'statsd' => (
+  is => 'rw',
+);
+
+has 'warning_callback' => (
   is => 'rw',
 );
 
@@ -74,6 +78,7 @@ sub timer {
     statsd => $self,
     metric => $metric,
     sample_rate => $sample_rate,
+    warning_callback => $self->warning_callback,
   );
 }
 
@@ -89,7 +94,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.20
+version 0.21
 
 =head1 SYNOPSIS
 
@@ -115,6 +120,12 @@ will actually be sent to the server. This sets the default sample rate,
 which can be overridden on a case-by-case basis when sending an event (for
 instance, you might choose to send errors at a 100% sample rate, but other
 events at 1%).
+
+=head2 warning_callback
+
+B<Optional:> A function that will be called with a message if a C<timer>
+is destroyed unexpectedly (see L<Net::Statsd::Timer>). If this is not set
+the builtin C<warn> will be used.
 
 =head1 METHODS
 

@@ -3,7 +3,7 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Measure event timings and send them to StatsD
-our $VERSION = '0.20'; # VERSION
+our $VERSION = '0.21'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -18,7 +18,7 @@ has '_pending' => (
   default => quote_sub q{1},
 );
 
-has ['metric', 'start', '_file', '_line'] => (
+has ['metric', 'start', '_file', '_line', 'warning_callback'] => (
   is => 'rw',
 );
 
@@ -47,12 +47,21 @@ sub cancel {
   delete $self->{_pending};
 }
 
+sub emit_warning {
+  my $self = shift;
+  if (defined $self->warning_callback) {
+    $self->warning_callback->(@_);
+  } else {
+    warn(@_);
+  }
+}
+
 sub DEMOLISH {
   my ($self) = @_;
   if ($self->{_pending}) {
     my $metric = $self->{metric};
     $metric = $self->{statsd}{prefix} . $metric if $self->{statsd} && $self->{statsd}{prefix};
-    warn "Unfinished timer for stat $metric (created at $self->{_file} line $self->{_line})";
+    $self->emit_warning("Unfinished timer for stat $metric (created at $self->{_file} line $self->{_line})");
   }
 }
 
@@ -68,7 +77,7 @@ Net::Statsd::Client::Timer - Measure event timings and send them to StatsD
 
 =head1 VERSION
 
-version 0.20
+version 0.21
 
 =head1 SYNOPSIS
 

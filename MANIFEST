@@ -14,3 +14,4 @@ t/basic.t
 t/lib/TestStatsd.pm
 t/live.t
 t/timer.t
+t/warning_callback.t
