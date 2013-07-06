@@ -3,7 +3,7 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Measure event timings and send them to StatsD
-our $VERSION = '0.21'; # VERSION
+our $VERSION = '0.22'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -77,7 +77,7 @@ Net::Statsd::Client::Timer - Measure event timings and send them to StatsD
 
 =head1 VERSION
 
-version 0.21
+version 0.22
 
 =head1 SYNOPSIS
 

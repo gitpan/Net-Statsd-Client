@@ -20,7 +20,7 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Net::Statsd::Client",
   "PREREQ_PM" => {
-    "Etsy::StatsD" => 0,
+    "Etsy::StatsD" => "1.001",
     "Moo" => 0,
     "Sub::Quote" => 0,
     "Time::HiRes" => 0
@@ -33,7 +33,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.21",
+  "VERSION" => "0.22",
   "test" => {
     "TESTS" => "t/*.t"
   }

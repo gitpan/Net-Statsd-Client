@@ -3,10 +3,10 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.21'; # VERSION
+our $VERSION = '0.22'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
-use Etsy::StatsD;
+use Etsy::StatsD 1.001;
 use Net::Statsd::Client::Timer;
 
 has 'prefix' => (
@@ -94,7 +94,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.21
+version 0.22
 
 =head1 SYNOPSIS
 
