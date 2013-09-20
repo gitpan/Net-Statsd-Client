@@ -30,10 +30,11 @@ my %WriteMakefileArgs = (
     "FindBin" => 0,
     "IO::Socket" => 0,
     "Test::More" => 0,
+    "lib" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.22",
+  "VERSION" => "0.30",
   "test" => {
     "TESTS" => "t/*.t"
   }

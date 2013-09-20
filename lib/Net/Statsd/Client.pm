@@ -3,7 +3,7 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.22'; # VERSION
+our $VERSION = '0.30'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Etsy::StatsD 1.001;
@@ -44,31 +44,43 @@ sub BUILD {
   );
 }
 
+sub _send {
+  my ($self, $data, $sample_rate) = @_;
+
+  $self->{statsd}->send(
+    { "$self->{prefix}$data->{metric}" => "$data->{value}|$data->{type}" },
+    ( defined($data->{sample_rate}) ? $data->{sample_rate} : $self->{sample_rate} ),
+  );
+}
+    
 sub increment {
-  my ($self, $metric, $sample_rate) = @_;
-  $metric = "$self->{prefix}$metric";
-  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
-  $self->{statsd}->increment($metric, $sample_rate);
+  # ($self, $metric, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => 1, type => "c", sample_rate => $_[2] });
 }
 
 sub decrement {
-  my ($self, $metric, $sample_rate) = @_;
-  $metric = "$self->{prefix}$metric";
-  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
-  $self->{statsd}->decrement($metric, $sample_rate);
+  # ($self, $metric, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => -1, type => "c", sample_rate => $_[2] });
 }
 
 sub update {
-  my ($self, $metric, $value, $sample_rate) = @_;
-  $metric = "$self->{prefix}$metric";
-  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
-  $self->{statsd}->update($metric, $value, $sample_rate);
+  # ($self, $metric, $value, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => $_[2], type => "c", sample_rate => $_[3] });
 }
 
 sub timing_ms {
-  my ($self, $metric, $time, $sample_rate) = @_;
-  $metric = "$self->{prefix}$metric";
-  $self->{statsd}->timing($metric, $time, $sample_rate);
+  # ($self, $metric, $time, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => $_[2], type => "ms", sample_rate => $_[3] });
+}
+
+sub gauge {
+  # ($self, $metric, $value, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => $_[2], type => "g", sample_rate => $_[3] });
+}
+
+sub set_add {
+  # ($self, $metric, $value, [$sample_rate])
+  $_[0]->_send({ metric => $_[1], value => $_[2], type => "s", sample_rate => $_[3] });
 }
 
 sub timer {
@@ -84,7 +96,7 @@ sub timer {
 
 1;
 
-__END__
+
 
 =pod
 
@@ -94,7 +106,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.22
+version 0.30
 
 =head1 SYNOPSIS
 
@@ -107,6 +119,15 @@ version 0.22
     $timer->finish;
 
 =head1 ATTRIBUTES
+
+=head2 host
+
+B<Optional:> The hostname of the StatsD server to connect to. Defaults to
+localhost.
+
+=head2 port
+
+B<Optional:> The port number to connect to. Defaults to 8125.
 
 =head2 prefix
 
@@ -151,6 +172,19 @@ Returns a L<Net::Statsd::Client::Timer> object for the named timing metric.
 The timer begins when you call this method, and ends when you call C<finish>
 on the timer.
 
+=head2 $stats->gauge($metric, $value, [$sample_rate])
+
+Send a value for the named gauge metric. Instead of adding up like counters
+or producing a large number of quantiles like timings, gauges simply take
+the last value sent in any time period, and don't require scaling.
+
+=head2 $statsd->set_add($metric, $value, [$sample_rate])
+
+Add a value to the named set metric. Sets count the number of *unique*
+values they see in each time period, letting you estimate, for example, the
+number of users using a site at a time by adding their userids to a set each
+time they load a page.
+
 =head1 AUTHOR
 
 Andrew Rodland <arodland@cpan.org>
@@ -163,3 +197,7 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
+
+
+__END__
+
