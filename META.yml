@@ -7,13 +7,12 @@ build_requires:
   FindBin: 0
   IO::Socket: 0
   Test::More: 0
-  lib: 0
   strict: 0
   warnings: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.131560'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -32,5 +31,5 @@ resources:
   homepage: http://metacpan.org/release/Net-Statsd-Client
   license: http://dev.perl.org/licenses/
   repository: git://github.com/arodland/Net-Statsd-Client.git
-version: 0.30
+version: 0.31
 x_authority: cpan:ARODLAND

@@ -3,7 +3,7 @@ use Moo;
 use Sub::Quote;
 
 # ABSTRACT: Send data to StatsD / Graphite
-our $VERSION = '0.30'; # VERSION
+our $VERSION = '0.31'; # VERSION
 our $AUTHORITY = 'cpan:ARODLAND'; # AUTHORITY
 
 use Etsy::StatsD 1.001;
@@ -44,43 +44,43 @@ sub BUILD {
   );
 }
 
-sub _send {
-  my ($self, $data, $sample_rate) = @_;
-
-  $self->{statsd}->send(
-    { "$self->{prefix}$data->{metric}" => "$data->{value}|$data->{type}" },
-    ( defined($data->{sample_rate}) ? $data->{sample_rate} : $self->{sample_rate} ),
-  );
-}
-    
 sub increment {
-  # ($self, $metric, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => 1, type => "c", sample_rate => $_[2] });
+  my ($self, $metric, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
+  $self->{statsd}->increment($metric, $sample_rate);
 }
 
 sub decrement {
-  # ($self, $metric, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => -1, type => "c", sample_rate => $_[2] });
+  my ($self, $metric, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
+  $self->{statsd}->decrement($metric, $sample_rate);
 }
 
 sub update {
-  # ($self, $metric, $value, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => $_[2], type => "c", sample_rate => $_[3] });
+  my ($self, $metric, $value, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $sample_rate = $self->{sample_rate} unless defined $sample_rate;
+  $self->{statsd}->update($metric, $value, $sample_rate);
 }
 
 sub timing_ms {
-  # ($self, $metric, $time, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => $_[2], type => "ms", sample_rate => $_[3] });
+  my ($self, $metric, $time, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $self->{statsd}->timing($metric, $time, $sample_rate);
 }
 
 sub gauge {
-  # ($self, $metric, $value, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => $_[2], type => "g", sample_rate => $_[3] });
+  my ($self, $metric, $value, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $self->{statsd}->send({ $metric => "$value|g" }, $sample_rate);
 }
 
 sub set_add {
-  # ($self, $metric, $value, [$sample_rate])
-  $_[0]->_send({ metric => $_[1], value => $_[2], type => "s", sample_rate => $_[3] });
+  my ($self, $metric, $value, $sample_rate) = @_;
+  $metric = "$self->{prefix}$metric";
+  $self->{statsd}->send({ $metric => "$value|s" }, $sample_rate);
 }
 
 sub timer {
@@ -96,7 +96,7 @@ sub timer {
 
 1;
 
-
+__END__
 
 =pod
 
@@ -106,7 +106,7 @@ Net::Statsd::Client - Send data to StatsD / Graphite
 
 =head1 VERSION
 
-version 0.30
+version 0.31
 
 =head1 SYNOPSIS
 
@@ -197,7 +197,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
